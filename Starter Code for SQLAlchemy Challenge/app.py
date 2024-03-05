@@ -56,9 +56,6 @@ f_station_avg = session.query(Measurement.station, func.avg(Measurement.tobs)).g
     order_by(desc(func.count(Measurement.station))).first()
 
 
-temperature_data = session.query(Measurement.date, Measurement.tobs).filter(Measurement.date >= one_year_ago).\
-    filter(Measurement.station == f_station[0])
-
 #################################################
 # Flask Routes
 #################################################
@@ -66,24 +63,22 @@ temperature_data = session.query(Measurement.date, Measurement.tobs).filter(Meas
 def welcome():
     """List all available api routes."""
     return (
-        f"Available routes:"
-        f"/api/v1.0/precipitation"
-        f"/api/v1.0/stations"
-        f"/api/v1.0/tobs"
-        f"/api/v1.0/<start>"
-        f"/api/v1.0/<start>/<end>"
+        f"Available routes:<br/>"
+        f"/api/v1.0/precipitation <br/>"
+        f"/api/v1.0/stations <br/>"
+        f"/api/v1.0/tobs <br/>"
+        f"/api/v1.0/start <br/>"
+        f"/api/v1.0/start/end <br/>"
     )
 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
-    session = Session(engine)
 
     precipitation = session.query(Measurement.date, Measurement.prcp).filter(Measurement.date >= one_year_ago)
-
-    precipitation_dict = {}
-
-    for date, prcp in precipitation:
-        precipitation_dict[date] = prcp
+    
+    precipitation_df = pd.DataFrame(precipitation, columns = ("Date", "Precipitation"))
+    
+    precipitation_dict = precipitation_df.set_index('Date')['Precipitation'].to_dict()
 
     return jsonify(precipitation_dict)
 
@@ -92,9 +87,12 @@ def precipitation():
 @app.route("/api/v1.0/stations")
 def stations():
 
-    session = Session(engine)
     
-    station_list = list(session.query(Station.station))
+    station_query = session.query(Station.station)
+
+    station_df = pd.DataFrame(station_query, columns = ("Station"))
+    
+    station_list = station_df['Station'].tolist()
 
     return jsonify(station_list)
 
@@ -103,29 +101,26 @@ def stations():
 
 @app.route("/api/v1.0/tobs")
 def tobs():
-    
-    session = Session(engine)
 
     temperature_data = session.query(Measurement.date, Measurement.tobs).filter(Measurement.date >= one_year_ago).\
     filter(Measurement.station == f_station[0])
 
-    temperatures = []
+    temperature_df = pd.DataFrame(temperature_data, columns = ("Date", "Tobs"))
 
-    for date, tobs in temperature_data:
-        temperatures.append(tobs)
+    temperatures = temperature_df["Tobs"].tolist()
 
     return jsonify(temperatures)
 
     session.close()
 
 #@app.route("/api/v1.0/<start>")
-#def start():
-    
-
-    
-
-
 #@app.route("/api/v1.0/<start>/<end>")
 #def start_stop():
 
-session.close()
+
+
+
+
+
+if __name__ == '__main__':
+    app.run()
