@@ -113,13 +113,32 @@ def tobs():
 
     session.close()
 
-#@app.route("/api/v1.0/<start>")
-#@app.route("/api/v1.0/<start>/<end>")
-#def start_stop():
+@app.route("/api/v1.0/<start>")
+@app.route("/api/v1.0/<start>/<end>")
+def start_stop():
+    start = input("Input a start date in the form YYYY-MM-DD" )
+    end = input("Optional: Input an end date in the form YYYY-MM-DD. Otherwise input NA." )
+        
+    if end != 'NA':
+            
+        desired_data = session.query(Measurement.tobs).filter(Measurement.date >= start)\
+        .filter(Measurement.date <= end)
+            
+        desired_df = pd.DataFrame(desired_data, columns = ('Tobs'))
+            
+        tavg = desired_df['Tobs'].mean()
+        tmin = min(desired_df['Tobs'])
+        tmax = max(desired_df['Tobs'])
+        
+    else:
 
-
-
-
+        desired_data = session.query(Measurement.tobs).filter(Measurement.date >= start)
+            
+        desired_df = pd.DataFrame(desired_data, columns = ('Tobs'))
+            
+        tavg = desired_df['Tobs'].mean()
+        tmin = min(desired_df['Tobs'])
+        tmax = max(desired_df['Tobs'])
 
 
 if __name__ == '__main__':
