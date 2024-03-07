@@ -29,8 +29,7 @@ Station = Base.classes.station
 Measurement = Base.classes.measurement
 
 # Create our session (link) from Python to the DB
-session = Session(bind=engine)
-session
+session = Session(engine)
 
 #################################################
 # Flask Setup
@@ -115,12 +114,11 @@ def tobs():
 
 @app.route("/api/v1.0/<start>")
 @app.route("/api/v1.0/<start>/<end>")
-def start_stop():
+def start_stop(start=None, end=None):
     start = input("Input a start date in the form YYYY-MM-DD" )
     end = input("Optional: Input an end date in the form YYYY-MM-DD. Otherwise input NA." )
         
-    if end != 'NA':
-            
+    if not end:
         desired_data = session.query(Measurement.tobs).filter(Measurement.date >= start)\
         .filter(Measurement.date <= end)
             
