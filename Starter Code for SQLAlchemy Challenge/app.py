@@ -89,9 +89,10 @@ def stations():
     
     station_query = session.query(Station.station)
 
-    station_df = pd.DataFrame(station_query, columns = ("Station"))
+    station_list = []
     
-    station_list = station_df['Station'].tolist()
+    for result in station_query:
+        station_list.append(result.station)
 
     return jsonify(station_list)
 
@@ -114,11 +115,11 @@ def tobs():
 
 @app.route("/api/v1.0/<start>")
 @app.route("/api/v1.0/<start>/<end>")
-def start_stop(start=None, end=None):
-    start = input("Input a start date in the form YYYY-MM-DD" )
-    end = input("Optional: Input an end date in the form YYYY-MM-DD. Otherwise input NA." )
+def start_stop(start, end):
+    start = input("Input a start date in the form YYYY-MM-DD: " )
+    end = input("Optional: Input an end date in the form YYYY-MM-DD. Otherwise input None: " )
         
-    if not end:
+    if end == None:
         desired_data = session.query(Measurement.tobs).filter(Measurement.date >= start)\
         .filter(Measurement.date <= end)
             
