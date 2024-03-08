@@ -116,12 +116,9 @@ def tobs():
 @app.route("/api/v1.0/<start>")
 @app.route("/api/v1.0/<start>/<end>")
 def start_stop(start, end):
-    start = input("Input a start date in the form YYYY-MM-DD: " )
-    end = input("Optional: Input an end date in the form YYYY-MM-DD. Otherwise input None: " )
-        
+    
     if end == None:
-        desired_data = session.query(Measurement.tobs).filter(Measurement.date >= start)\
-        .filter(Measurement.date <= end)
+        desired_data = session.query(Measurement.tobs).filter(Measurement.date >= start)
             
         desired_df = pd.DataFrame(desired_data, columns = ('Tobs'))
             
@@ -131,7 +128,7 @@ def start_stop(start, end):
         
     else:
 
-        desired_data = session.query(Measurement.tobs).filter(Measurement.date >= start)
+        desired_data = session.query(Measurement.tobs).filter(Measurement.date >= start).filter(Measurement.date <= end)
             
         desired_df = pd.DataFrame(desired_data, columns = ('Tobs'))
             
