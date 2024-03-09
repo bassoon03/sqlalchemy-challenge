@@ -118,23 +118,27 @@ def tobs():
 def start_stop(start, end):
     
     if end == None:
-        desired_data = session.query(Measurement.tobs).filter(Measurement.date >= start)
+
+        desired_data = session.query(Measurement.tobs, Measurement.date).filter(Measurement.date >= start)
             
-        desired_df = pd.DataFrame(desired_data, columns = ('Tobs'))
-            
-        tavg = desired_df['Tobs'].mean()
-        tmin = min(desired_df['Tobs'])
-        tmax = max(desired_df['Tobs'])
+        desired_df = pd.DataFrame(desired_data, columns = ('Tobs', 'Date'))
         
     else:
 
-        desired_data = session.query(Measurement.tobs).filter(Measurement.date >= start).filter(Measurement.date <= end)
+        desired_data = session.query(Measurement.tobs, Measurement.date).filter(Measurement.date >= start).filter(Measurement.date <= end)
             
-        desired_df = pd.DataFrame(desired_data, columns = ('Tobs'))
+        desired_df = pd.DataFrame(desired_data, columns = ('Tobs', 'Date'))
             
-        tavg = desired_df['Tobs'].mean()
-        tmin = min(desired_df['Tobs'])
-        tmax = max(desired_df['Tobs'])
+    
+    tavg = desired_df['Tobs'].mean()
+    tmin = min(desired_df['Tobs'])
+    tmax = max(desired_df['Tobs'])
+
+    session.close()
+
+    return tavg, tmin, tmax
+
+    
 
 
 if __name__ == '__main__':
