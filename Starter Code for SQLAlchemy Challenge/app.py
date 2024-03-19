@@ -36,28 +36,31 @@ session = Session(engine)
 #################################################
 app = Flask(__name__)
 
-
+# Read in hawaii_measurements file
 hawaii_measurements = pd.read_csv("..\\Starter Code for SQLAlchemy Challenge\\Resources\\hawaii_measurements.csv")
+
+# Most recent date in the data set
 most_recent_date = hawaii_measurements["date"].max()
+
+# One year prior to the most recent date
 one_year_ago = datetime.strptime(most_recent_date, "%Y-%m-%d") - dt.timedelta(days=365)
+
+# Formatting
 one_year_ago = one_year_ago.strftime('%Y-%m-%d')
 
-f_station = session.query(Measurement.station, func.count(Measurement.station)).group_by(Measurement.station).\
+
+
+# Most active station
+h_station = session.query(Measurement.station, func.count(Measurement.station)).group_by(Measurement.station).\
     order_by(desc(func.count(Measurement.station))).first()
 
-f_station_max = session.query(Measurement.station, func.max(Measurement.tobs)).group_by(Measurement.station).\
-    order_by(desc(func.count(Measurement.station))).first()
-
-f_station_min = session.query(Measurement.station, func.min(Measurement.tobs)).group_by(Measurement.station).\
-    order_by(desc(func.count(Measurement.station))).first()
-
-f_station_avg = session.query(Measurement.station, func.avg(Measurement.tobs)).group_by(Measurement.station).\
-    order_by(desc(func.count(Measurement.station))).first()
 
 
 #################################################
 # Flask Routes
 #################################################
+
+
 @app.route("/")
 def welcome():
     """List all available api routes."""
@@ -69,6 +72,7 @@ def welcome():
         f"/api/v1.0/start <br/>"
         f"/api/v1.0/start/end <br/>"
     )
+
 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
@@ -82,6 +86,8 @@ def precipitation():
     return jsonify(precipitation_dict)
 
     session.close()
+
+
 
 @app.route("/api/v1.0/stations")
 def stations():
@@ -99,11 +105,12 @@ def stations():
     session.close()
 
 
+
 @app.route("/api/v1.0/tobs")
 def tobs():
 
     temperature_data = session.query(Measurement.date, Measurement.tobs).filter(Measurement.date >= one_year_ago).\
-    filter(Measurement.station == f_station[0])
+    filter(Measurement.station == h_station[0])
 
     temperature_df = pd.DataFrame(temperature_data, columns = ("Date", "Tobs"))
 
@@ -113,6 +120,8 @@ def tobs():
 
     session.close()
 
+
+
 @app.route("/api/v1.0/<start>")
 @app.route("/api/v1.0/<start>/<end>")
 def start_stop(start, end):
@@ -121,18 +130,19 @@ def start_stop(start, end):
 
         desired_data = session.query(Measurement.tobs, Measurement.date).filter(Measurement.date >= start)
             
-        desired_df = pd.DataFrame(desired_data, columns = ('Tobs', 'Date'))
+        desired_data_df = pd.DataFrame(desired_data, columns = ('Tobs', 'Date'))
         
     else:
 
-        desired_data = session.query(Measurement.tobs, Measurement.date).filter(Measurement.date >= start).filter(Measurement.date <= end)
+        desired_data = session.query(Measurement.tobs, Measurement.date).filter(Measurement.date >= start).\
+            filter(Measurement.date <= end)
             
-        desired_df = pd.DataFrame(desired_data, columns = ('Tobs', 'Date'))
+        desired_data_df = pd.DataFrame(desired_data, columns = ('Tobs', 'Date'))
             
     
-    tavg = desired_df['Tobs'].mean()
-    tmin = min(desired_df['Tobs'])
-    tmax = max(desired_df['Tobs'])
+    tavg = desired_data_df['Tobs'].mean()
+    tmin = min(desired_data_df['Tobs'])
+    tmax = max(desired_data_df['Tobs'])
 
     session.close()
 
