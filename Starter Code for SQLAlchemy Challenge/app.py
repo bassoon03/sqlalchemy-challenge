@@ -136,7 +136,9 @@ def start_stop(start, end):
 
     session.close()
 
-    return tavg, tmin, tmax
+    results_list = [f"Average Temperature: {tavg}", f"Minimum Temperature: {tmin}", f"Maximum Temperature: {tmax}"]
+
+    return results_list
 
     
 
